@@ -1,56 +1,100 @@
-$ninesixty-gutter-width: 20px !default
+/*
+ *  960 Grid System ~ Core CSS.
+ *  Learn more ~ http://960.gs/
+ *
+ *  Licensed under GPL and MIT.
+@import compass/css3/background-size
 
+$ninesixty-grid-margin: auto !default
+$ninesixty-gutter-width: 20px !default
 $ninesixty-grid-width: 960px !default
+
+$ninesixty-fluid-grid-margin: 4% !default
+$ninesixty-fluid-gutter-width: 2% !default
+$ninesixty-fluid-grid-width: 100% !default
 
 $ninesixty-columns: 12 !default
 
-=grid-container
-  margin-left: auto
-  margin-right: auto
-  width: $ninesixty-grid-width
+=grid-container($columns: $ninesixty-columns, $gutter-width: $ninesixty-gutter-width, $grid-width: $ninesixty-grid-width, $grid-margin: $ninesixty-grid-margin)
+  margin-left: $grid-margin
+  margin-right: $grid-margin
+  width: $grid-width - if($grid-margin == "auto", 0, $grid-margin * 2)
+  .clear
+    background: none
+    border: 0
+    clear: both
+    display: block
+    float: none
+    font-size: 0
+    list-style: none
+    margin: 0
+    padding: 0
+    overflow: hidden
+    visibility: hidden
+    width: 0
+    height: 0
 
-=grid-width($n, $cols: $ninesixty-columns, $gutter-width: $ninesixty-gutter-width)
-  width: $ninesixty-grid-width / $cols * $n - $gutter-width
+=grid-width($n, $columns: $ninesixty-columns, $gutter-width: $ninesixty-gutter-width, $grid-width: $ninesixty-grid-width)
+  width: $grid-width / $columns * $n - $gutter-width
+
+=grid-unit-margin($gutter-width: $ninesixty-gutter-width)
+  margin:
+    left: $gutter-width / 2
+    right: $gutter-width / 2
+  @if unit($grid-width) == "%"
+    *margin:
+      left: $gutter-width / 2 * 0.92
+      right: $gutter-width / 2 * 0.92
+    _margin:
+      left: $gutter-width / 2 * 0.8
+      right: $gutter-width / 2 * 0.8
 
 =grid-unit-base($gutter-width: $ninesixty-gutter-width)
   display: inline
   float: left
-  margin:
-    left: $gutter-width / 2
-    right: $gutter-width / 2
+  +grid-unit-margin($gutter-width)
 
-=grid($n, $cols: $ninesixty-columns, $gutter-width: $ninesixty-gutter-width)
+=grid($n, $columns: $ninesixty-columns, $gutter-width: $ninesixty-gutter-width, $grid-width: $ninesixty-grid-width)
   +grid-unit-base($gutter-width)
-  +grid-width($n, $cols, $gutter-width)
+  +grid-width($n, $columns, $gutter-width, $grid-width)
 
 =alpha
-  margin-left: 0
+  margin-left: 0 !important
 
 =omega
-  margin-right: 0
+  margin-right: 0 !important
 
-=grids($cols: $ninesixty-columns, $gutter-width: $ninesixty-gutter-width)
-  #{enumerate(".grid", 1, $cols, "_")}
-    +grid-unit-base
-  @for $n from 1 through $cols
+=grids($columns: $ninesixty-columns, $gutter-width: $ninesixty-gutter-width, $grid-width: $ninesixty-grid-width)
+  #{enumerate(".grid", 1, $columns, "_")}
+    +grid-unit-base($gutter-width)
+  @for $n from 1 through $columns
     .grid_#{$n}
-      +grid-width($n, $cols, $gutter-width)
+      +grid-width($n, $columns, $gutter-width, $grid-width)
 
-=grid-prefix($n, $cols: $ninesixty-columns)
-  padding-left: $ninesixty-grid-width / $cols * $n
+=grids-nested($columns: $ninesixty-columns, $gutter-width: $ninesixty-gutter-width, $grid-width: $ninesixty-grid-width)
+  @if unit($grid-width) == "%"
+    @for $n from 1 through $columns
+      $gutter: $gutter-width * $grid-width / ($grid-width / $columns * $n - $gutter-width)
+      @for $m from 1 through $n
+        .grid_#{$n} .grid_#{$m}
+          +grid-width($m, $n, $gutter, 100% + $gutter)
+          +grid-unit-margin($gutter)
 
-=grid-prefixes($cols: $ninesixty-columns)
-  @for $n from 1 through $cols - 1
+=grid-prefix($n, $columns: $ninesixty-columns, $grid-width: $ninesixty-grid-width)
+  padding-left: $grid-width / $columns * $n
+
+=grid-prefixes($columns: $ninesixty-columns, $grid-width: $ninesixty-grid-width)
+  @for $n from 1 through $columns - 1
     .prefix_#{$n}
-      +grid-prefix($n, $cols)
+      +grid-prefix($n, $columns, $grid-width)
 
-=grid-suffix($n, $cols: $ninesixty-columns)
-  padding-right: $ninesixty-grid-width / $cols * $n
+=grid-suffix($n, $columns: $ninesixty-columns, $grid-width: $ninesixty-grid-width)
+  padding-right: $grid-width / $columns * $n
 
-=grid-suffixes($cols: $ninesixty-columns)
-  @for $n from 1 through $cols - 1
+=grid-suffixes($columns: $ninesixty-columns, $grid-width: $ninesixty-grid-width)
+  @for $n from 1 through $columns - 1
     .suffix_#{$n}
-      +grid-suffix($n, $cols)
+      +grid-suffix($n, $columns, $grid-width)
 
 =grid-children
   .alpha
@@ -61,26 +105,30 @@ $ninesixty-columns: 12 !default
 =grid-move-base
   position: relative
 
-=grid-push($n, $cols: $ninesixty-columns)
-  left: ($ninesixty-grid-width / $cols) * $n
+=grid-push($n, $columns: $ninesixty-columns, $grid-width: $ninesixty-grid-width)
+  left: $grid-width / $columns * $n
 
-=grid-pull($n, $cols: $ninesixty-columns)
-  left: -($ninesixty-grid-width / $cols) * $n
+=grid-pull($n, $columns: $ninesixty-columns, $grid-width: $ninesixty-grid-width)
+  left: -($grid-width / $columns) * $n
 
-=grid-movements($cols: $ninesixty-columns)
-  #{enumerate(".push", 1, $cols, "_")},
-  #{enumerate(".pull", 1, $cols, "_")}
+=grid-movements($columns: $ninesixty-columns, $grid-width: $ninesixty-grid-width)
+  #{enumerate(".push", 1, $columns, "_")},
+  #{enumerate(".pull", 1, $columns, "_")}
     +grid-move-base
-  @for $n from 1 through $cols
+  @for $n from 1 through $columns
     .push_#{$n}
-      +grid-push($n, $cols)
+      +grid-push($n, $columns, $grid-width)
     .pull_#{$n}
-      +grid-pull($n, $cols)
+      +grid-pull($n, $columns, $grid-width)
 
-=grid-system($cols: $ninesixty-columns)
-  +grid-container
-  +grids($cols)
-  +grid-prefixes($cols)
-  +grid-suffixes($cols)
+=grid-system($columns: $ninesixty-columns, $gutter-width: $ninesixty-gutter-width, $grid-width: $ninesixty-grid-width, $grid-margin: $ninesixty-grid-margin)
+  +grid-container($columns, $gutter-width, $grid-width, $grid-margin)
+  +grids($columns, $gutter-width, $grid-width)
+  +grids-nested($columns, $gutter-width, $grid-width)
+  +grid-prefixes($columns, $grid-width)
+  +grid-suffixes($columns, $grid-width)
   +grid-children
-  +grid-movements($cols)
+  +grid-movements($columns, $grid-width)
+
+=grid-fluid-system($columns: $ninesixty-columns, $gutter-width: $ninesixty-fluid-gutter-width, $grid-width: $ninesixty-fluid-grid-width, $grid-margin: $ninesixty-fluid-grid-margin)
+  +grid-system($columns, $gutter-width, $grid-width, $grid-margin)
